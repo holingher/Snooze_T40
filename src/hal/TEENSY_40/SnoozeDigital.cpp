@@ -9,14 +9,14 @@
 
 #include "SnoozeDigital.h"
 
-#define DR    0
-#define GDIR  1
-#define PSR   2
-#define ICR1  3
-#define ICR2  4
-#define IMR   5
-#define ISR   6
-#define EDGE  7
+#define _DR    0
+#define _GDIR  1
+#define _PSR   2
+#define _ICR1  3
+#define _ICR2  4
+#define _IMR   5
+#define _ISR   6
+#define _EDGE  7
 
 #ifdef __cplusplus
 extern "C" {
@@ -402,9 +402,9 @@ void SnoozeDigital::clearIsrFlags( uint32_t ipsr ) {
                     break;
             }
         }
-        uint32_t status = gpio[ISR] & gpio[IMR];
+        uint32_t status = gpio[_ISR] & gpio[_IMR];
         if ( status ) {
-            gpio[ISR] = status;
+            gpio[_ISR] = status;
         }
         detachDigitalInterrupt( pinNumber );// remove pin interrupt
     }
@@ -450,24 +450,24 @@ void SnoozeDigital::attachDigitalInterrupt( uint8_t pin, int type ) {
         default: return;
     }
     // TODO: global interrupt disable to protect these read-modify-write accesses?
-    gpio[IMR] &= ~mask;    // disable interrupt
+    gpio[_IMR] &= ~mask;    // disable interrupt
     *mux = 5;               // pin is GPIO
-    gpio[GDIR] &= ~mask;    // pin to input mode
+    gpio[_GDIR] &= ~mask;    // pin to input mode
     uint32_t index = __builtin_ctz( mask );
     if ( type == CHANGE ) {
-        gpio[EDGE] |= mask;
+        gpio[_EDGE] |= mask;
     } else {
-        gpio[EDGE] &= ~mask;
+        gpio[_EDGE] &= ~mask;
         if ( index < 15 ) {
             uint32_t shift = index * 2;
-            gpio[ICR1] = (gpio[ICR1] & ~( 3 << shift ) ) | ( icr << shift );
+            gpio[_ICR1] = (gpio[_ICR1] & ~( 3 << shift ) ) | ( icr << shift );
         } else {
             uint32_t shift = ( index - 16 ) * 2;
-            gpio[ICR2] = ( gpio[ICR2] & ~( 3 << shift ) ) | ( icr << shift );
+            gpio[_ICR2] = ( gpio[_ICR2] & ~( 3 << shift ) ) | ( icr << shift );
         }
     }
-    gpio[ISR] = mask;  // clear any prior pending interrupt
-    gpio[IMR] |= mask; // enable interrupt
+    gpio[_ISR] = mask;  // clear any prior pending interrupt
+    gpio[_IMR] |= mask; // enable interrupt
 
 }
 
@@ -498,6 +498,6 @@ void SnoozeDigital::detachDigitalInterrupt( uint8_t pin ) {
         }
     }
     uint32_t mask = digitalPinToBitMask( pin );
-    gpio[IMR] &= ~mask;
+    gpio[_IMR] &= ~mask;
 }
 #endif /* __IMXRT1062__ */
